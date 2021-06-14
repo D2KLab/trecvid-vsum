@@ -17,7 +17,14 @@ import xml.etree.ElementTree as xml
 strptime = datetime.datetime.strptime
 
 # mapping episode numbers to files
-episodes_numbers = list(map(str, range(175, 185+1)))
+#episodes_numbers = list(map(str, range(175, 185+1))) #2020edition
+episodes_numbers = list(map(str, range(60, 70+1))) #2021 edition for characters Max,Jack,Tanya
+#episodes_numbers = list(map(str, range(79, 89+1))) #2021 edition for characters Peggy,Archie
+
+
+
+
+
 videos_data      = xml.parse('eastenders.collection.xml').getroot().findall("./VideoFile")
 
 episodes_filenames = {v.find('filename').text: v.find('id').text 
@@ -61,7 +68,6 @@ print('Episodes dates:')
 pprint(episodes_dates)
 
 # Scraping episode data (dates for prev and next episodes) from the BBC website
-"""
 episodes_dates = {}
 for filename, url in episodes_urls.items():
     page_content = bs(urlopen(url), 'html.parser')
@@ -79,17 +85,21 @@ for filename, url in episodes_urls.items():
 
     print(episodes_dates[filename]['prev_date'])
     print(episodes_dates[filename]['airing_date'])
-"""
 
 
-wiki_url = 'https://eastenders.fandom.com/wiki/2010'
+
+#wiki_url = 'https://eastenders.fandom.com/wiki/2010'
+#wiki_url = 'https://eastenders.fandom.com/wiki/2009'
+wiki_url ='https://eastenders.fandom.com/wiki/2008'
 page_content = bs(urlopen(wiki_url), 'html.parser')
 earliest_date, latest_date = None, None
 
 for filename, url in episodes_urls.items():
     page_content = bs(urlopen(url), 'html.parser')
+    print(url)
     airing_date = page_content.find('span', {'class': 'broadcast-event__date'}).get_text()
     airing_date = strptime(airing_date, '%a %d %b %Y')
+
 
     if latest_date == None or earliest_date < airing_date:
         latest_date = airing_date 
@@ -100,15 +110,18 @@ for filename, url in episodes_urls.items():
         if earliest_date == None or earliest_date > prev_date:
             earliest_date = prev_date 
     except Exception as e:
+        print('Exception: ', str(e))
         continue
-        # print('Exception: ', str(e))
+        
 
 print("Earliest date:", earliest_date)
 print("Latest date:", latest_date)
 
-url = 'https://eastenders.fandom.com/wiki/2010'
+#url = 'https://eastenders.fandom.com/wiki/2010'
+#url = 'https://eastenders.fandom.com/wiki/2009'
+url = 'https://eastenders.fandom.com/wiki/2008'
 page_content = bs(urlopen(url), 'html.parser')
-table = page_content.find_all('table', {'class': 'sortable'})[1]
+table = page_content.find_all('table', {'class': 'sortable'})[2]
 
 synopses = {}
 credits = {}
@@ -116,25 +129,34 @@ credits = {}
 for row in table.find_all('a', {'class': 'mw-redirect'} ):
     try:
         date = row.get_text()
+        print(date)
         tdate = strptime(date, '%d %B %Y')
     except:
+        print('no date')
         continue # ignore links that don't contain dates
     
     if earliest_date < tdate < latest_date:
         # scraping synopsis
         synopses[date] = []
         article_url = 'https://eastenders.fandom.com' + row.get('href')
+        print('thats the url')
+        print(article_url)
+        print('that was the url')
         page_content = bs(urlopen(article_url), 'html.parser')
-        synopsis_title = page_content.find('h2', text='Synopsis')
+        synopsis_title = page_content.find('h2', text='Summary')
         synopsis_paragraph = synopsis_title.find_next_sibling()
         while synopsis_paragraph.name == 'p':
             synopses[date].append(synopsis_paragraph.get_text())
             synopsis_paragraph = synopsis_paragraph.find_next_sibling()
+
+        
+        
         synopses[date] = ''.join(synopses[date])
         
         # scraping credits
         credits_title = page_content.find('h2', text='Credits')
         mapping = {}
+
 
         ttable = credits_title.find_next('table')
         if ttable:
@@ -158,10 +180,12 @@ for row in table.find_all('a', {'class': 'mw-redirect'} ):
 # Every episode takes the synopses and credits from the the previous week episodes
 data = {}
 for episode_filename in episodes_filenames:
+    print(episode_filename)
     data[episode_filename] = {
         'url': episodes_urls[episode_filename], 
         'airing_date': episodes_dates[episode_filename]['airing_date'],
-        # 'previous_airing': episodes_dates[episode_filename]['prev_date'],
+        #'airing_date': episodes_dates[episode_filename],
+        'previous_airing': episodes_dates[episode_filename]['prev_date'],
         'episodes_descriptions': episodes_descriptions[episode_filename],
         'episodes_web_description': episodes_web_description[episode_filename],
         'characters': episodes_characters[episode_filename],
@@ -177,4 +201,6 @@ for episode_filename in episodes_filenames:
                                               data[episode_filename]['airing_date'] - strptime(date, '%d %B %Y') < 
                                               datetime.timedelta(days=7)]
 
-pickle.dump(data, open('episodes_data.pickle', 'wb'))
+#pickle.dump(data, open('episodes_data.pickle', 'wb'))
+pickle.dump(data, open('episodes_data_Max_Jack_Tanya_2021.pickle', 'wb'))
+#pickle.dump(data, open('episodes_data_Peggy_Archie_2021.pickle', 'wb'))
