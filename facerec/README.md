@@ -128,3 +128,12 @@ The list is:
 - Max Branning
 - Paul
 - Tamwar Masood
+
+### 2.only main
+
+Only the main character have been searched in this version, namely:
+- Max Branning
+- Tanya Branning
+- Jack Branning
+- Peggy Mitchell
+- Archie Mitchell
