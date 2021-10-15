@@ -20,9 +20,6 @@ Note : this folder also includes facerec results for a larger pool of EastEnders
 3) Perform Zero Shot Classification with event labels
 4) Generate the shot candidate shots for the summary with [`submission_generation.ipynb`](./submission/submission_generation.ipynb). This is done by first concatenating the output of the previous steps (i.e. aligning coreference-resolved transcripts and facerec output with the [master shot reference table](./facerec_segment/eastenders.masterShotReferenceTable.txt)), so that the content of each shot is aligned (time-wise) with the shot IDs. The next step is to compute the similarity between each shot content and the synopses sentences as described in the paper. The N shots (N varying per run) with the higher similarity scores are picked and written into XML files ([`submissions`](./submission/xml)).
 
-Experiments not included in the final approach for TRECVID VSUM 2020 task : 
 
-1) Concatening subtitles with automatically generated captions, see [`captions`](./captions)
-2) Diarization of the video segments, see [`diarization`](./diarization)
 
 
